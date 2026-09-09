@@ -1,0 +1,15 @@
+# Weekly npm bumps, minor/patch batched to keep noise down (mirrors lacymorrow/shipkit).
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/New_York"
+    groups:
+      minor-patch:
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: "chore(deps)"
