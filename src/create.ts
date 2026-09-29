@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { add } from "./add.js";
 import { TEMPLATE_REPOS, UPSTREAM_REMOTE } from "./constants.js";
 import {
   canAccessRepo,
@@ -19,6 +20,7 @@ export interface CreateOptions {
   template?: string;
   directory?: string;
   install?: boolean;
+  add?: string;
 }
 
 /**
@@ -263,6 +265,15 @@ export async function create(projectName: string | undefined, opts: CreateOption
       s.stop(`${pm} install failed. Run it yourself after fixing the error above.`);
     } else {
       s.stop("Dependencies installed.");
+    }
+  }
+
+  // --- Registry items ---
+  if (opts.add) {
+    if (!shouldInstall) {
+      p.log.warn("--add needs dependencies installed; skipping. Run 'shipkit add' after installing.");
+    } else {
+      await add([opts.add], { yes: nonInteractive, cwd: targetDir });
     }
   }
 
