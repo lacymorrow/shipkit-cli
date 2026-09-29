@@ -20,6 +20,7 @@ shipkit create my-new-site
 | Command | What it does |
 |---------|--------------|
 | `shipkit create [name]` | Create a new project from [Bones](https://github.com/shipkit-io/bones), the public root template (or `--template lacymorrow/shipkit` for the everything-included build). Creates a GitHub repo (via `gh`), clones it, sets the `upstream` remote to the template, grafts upstream history so future syncs merge cleanly, and installs with the template's package manager. |
+| `shipkit add <items...>` | Add ShipKit registry items (`npx shadcn add @shipkit/<item>`), for example `shipkit add payments email`. Adds `--overwrite` automatically for items that replace a Bones stub (payments, storage, payload). `shipkit create my-app --add payments,email` does it right after install. |
 | `shipkit sync` | Pull upstream template changes into your project. Opens a PR branch by default; use `--direct` to merge into the current branch. |
 | `shipkit deploy` | Deploy your ShipKit site to Vercel. |
 
