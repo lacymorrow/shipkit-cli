@@ -1,6 +1,6 @@
 {
   "name": "create-shipkit-app",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Create a ShipKit app from Bones and keep it in sync with upstream",
   "type": "module",
   "bin": {
