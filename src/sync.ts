@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { UPSTREAM_REMOTE, UPSTREAM_REPOS } from "./constants.js";
+import { DEFAULT_UPSTREAM_URL, UPSTREAM_REMOTE } from "./constants.js";
 import { canAccessRepo, isNonInteractive, run, runOrThrow } from "./utils.js";
 
 export interface SyncOptions {
@@ -13,12 +13,10 @@ async function ensureUpstream(cwd: string): Promise<string | null> {
   const existing = await run("git", ["remote", "get-url", UPSTREAM_REMOTE], { cwd });
   if (existing) return existing;
 
-  // Try to add
-  for (const url of UPSTREAM_REPOS) {
-    if (await canAccessRepo(url)) {
-      await run("git", ["remote", "add", UPSTREAM_REMOTE, url], { cwd });
-      return url;
-    }
+  // No remote yet: Bones is the root of every ShipKit project
+  if (await canAccessRepo(DEFAULT_UPSTREAM_URL)) {
+    await run("git", ["remote", "add", UPSTREAM_REMOTE, DEFAULT_UPSTREAM_URL], { cwd });
+    return DEFAULT_UPSTREAM_URL;
   }
   return null;
 }

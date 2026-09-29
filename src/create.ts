@@ -2,10 +2,11 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { TEMPLATE_REPOS, UPSTREAM_REMOTE, UPSTREAM_REPOS } from "./constants.js";
+import { TEMPLATE_REPOS, UPSTREAM_REMOTE } from "./constants.js";
 import {
   canAccessRepo,
   commandExists,
+  detectPackageManager,
   isNonInteractive,
   run,
   runOrThrow,
@@ -57,20 +58,10 @@ async function resolveTemplate(
   return null;
 }
 
-/**
- * Find the best accessible upstream URL.
- */
-async function resolveUpstream(): Promise<string | null> {
-  for (const url of UPSTREAM_REPOS) {
-    if (await canAccessRepo(url)) return url;
-  }
-  return null;
-}
-
 export async function create(projectName: string | undefined, opts: CreateOptions): Promise<void> {
   const nonInteractive = opts.yes ?? isNonInteractive();
 
-  p.intro(pc.bgCyan(pc.black(" create-shipkit ")));
+  p.intro(pc.bgCyan(pc.black(" create-shipkit-app ")));
 
   // --- Preflight checks ---
   const hasGh = await commandExists("gh");
@@ -173,8 +164,10 @@ export async function create(projectName: string | undefined, opts: CreateOption
   }
 
   // --- Setup upstream remote ---
+  // The upstream is the template this project was created from, so `shipkit sync`
+  // pulls from the same place. Bones is the root; ShipKit's own upstream is Bones.
   s.start("Setting up upstream remote...");
-  const upstreamUrl = await resolveUpstream();
+  const upstreamUrl = `https://github.com/${templateSlug}.git`;
   if (upstreamUrl) {
     const existing = await run("git", ["remote", "get-url", UPSTREAM_REMOTE], {
       cwd: targetDir,
@@ -260,13 +253,17 @@ export async function create(projectName: string | undefined, opts: CreateOption
   }
 
   // --- Install dependencies ---
+  // Bones uses pnpm and ShipKit uses bun; follow the template's package.json.
+  const pm = await detectPackageManager(targetDir);
   const shouldInstall = opts.install !== false;
   if (shouldInstall) {
-    const hasBun = await commandExists("bun");
-    const pm = hasBun ? "bun" : "npm";
     s.start(`Installing dependencies with ${pm}...`);
-    await run(pm, ["install"], { cwd: targetDir });
-    s.stop("Dependencies installed.");
+    const installed = await run(pm, ["install"], { cwd: targetDir });
+    if (installed === null) {
+      s.stop(`${pm} install failed. Run it yourself after fixing the error above.`);
+    } else {
+      s.stop("Dependencies installed.");
+    }
   }
 
   // --- Done ---
@@ -277,10 +274,12 @@ export async function create(projectName: string | undefined, opts: CreateOption
   console.log();
   console.log(`  ${pc.cyan("cd")} ${name}`);
   if (!shouldInstall) {
-    console.log(`  ${pc.cyan("bun install")}`);
+    console.log(`  ${pc.cyan(`${pm} install`)}`);
   }
-  console.log(`  ${pc.cyan("cp")} .env.example .env`);
-  console.log(`  ${pc.cyan("bun dev")}`);
+  console.log(`  ${pc.cyan("cp")} .env.example .env.local`);
+  console.log(`  ${pc.cyan(`${pm} dev`)}`);
+  console.log();
+  console.log(`  ${pc.dim("Add integrations:")} ${pc.cyan("npx shadcn add @shipkit/<item>")}`);
   console.log();
   console.log(`  ${pc.dim("Sync upstream:")} ${pc.cyan("shipkit sync")}`);
   console.log(`  ${pc.dim("Deploy:")}         ${pc.cyan("shipkit deploy")}`);

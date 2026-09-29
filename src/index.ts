@@ -6,7 +6,7 @@ import { type SyncOptions, sync } from "./sync.js";
 const program = new Command()
   .name("shipkit")
   .description("Scaffold and manage ShipKit sites")
-  .version("0.2.0");
+  .version("0.3.0");
 
 program
   .command("create")
@@ -34,7 +34,7 @@ program
 
 // Default: if no command given, run create
 program.action((_opts, cmd) => {
-  // If called as `create-shipkit <name>`, treat as create
+  // If called as `create-shipkit-app <name>`, treat as create
   const args = cmd.args;
   if (args.length > 0) {
     return create(args[0], { yes: false });
