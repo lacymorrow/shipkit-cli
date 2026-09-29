@@ -1,11 +1,11 @@
 {
-  "name": "create-shipkit",
-  "version": "0.2.0",
-  "description": "Scaffold and manage ShipKit sites",
+  "name": "create-shipkit-app",
+  "version": "0.3.0",
+  "description": "Create a ShipKit app from Bones and keep it in sync with upstream",
   "type": "module",
   "bin": {
-    "shipkit": "./dist/index.js",
-    "create-shipkit": "./dist/index.js"
+    "create-shipkit-app": "./dist/index.js",
+    "shipkit": "./dist/index.js"
   },
   "files": [
     "dist"

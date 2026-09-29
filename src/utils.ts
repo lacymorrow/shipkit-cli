@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { execa } from "execa";
 
 /**
@@ -92,4 +94,30 @@ export async function openUrl(url: string): Promise<void> {
   } else {
     await run("xdg-open", [url]);
   }
+}
+
+export type PackageManager = "bun" | "pnpm" | "npm" | "yarn";
+
+/**
+ * Pick the package manager the template expects: the `packageManager` field in
+ * package.json first, then the lockfile, then whatever is installed.
+ */
+export async function detectPackageManager(dir: string): Promise<PackageManager> {
+  try {
+    const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
+      packageManager?: string;
+    };
+    const declared = pkg.packageManager?.split("@")[0];
+    if (declared === "bun" || declared === "pnpm" || declared === "npm" || declared === "yarn") {
+      return declared;
+    }
+  } catch {
+    // no package.json or unreadable; fall through
+  }
+  if (existsSync(join(dir, "bun.lock")) || existsSync(join(dir, "bun.lockb"))) return "bun";
+  if (existsSync(join(dir, "pnpm-lock.yaml"))) return "pnpm";
+  if (existsSync(join(dir, "yarn.lock"))) return "yarn";
+  if (existsSync(join(dir, "package-lock.json"))) return "npm";
+  if (await commandExists("bun")) return "bun";
+  return "npm";
 }

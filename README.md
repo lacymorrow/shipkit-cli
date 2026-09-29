@@ -1,17 +1,17 @@
-# create-shipkit
+# create-shipkit-app
 
 Scaffold and manage [ShipKit](https://shipkit.io) sites from the command line.
 
 ## Quick start
 
 ```bash
-npx create-shipkit my-new-site
+npm create shipkit-app@latest my-new-site
 ```
 
 Or install globally:
 
 ```bash
-npm install -g create-shipkit
+npm install -g create-shipkit-app
 shipkit create my-new-site
 ```
 
@@ -19,14 +19,14 @@ shipkit create my-new-site
 
 | Command | What it does |
 |---------|--------------|
-| `shipkit create [name]` | Create a new ShipKit project from a template. Creates a GitHub repo (via `gh`), clones it, sets the upstream remote, and grafts upstream history so future syncs merge cleanly. |
+| `shipkit create [name]` | Create a new project from [Bones](https://github.com/shipkit-io/bones), the public root template (or `--template lacymorrow/shipkit` for the everything-included build). Creates a GitHub repo (via `gh`), clones it, sets the `upstream` remote to the template, grafts upstream history so future syncs merge cleanly, and installs with the template's package manager. |
 | `shipkit sync` | Pull upstream template changes into your project. Opens a PR branch by default; use `--direct` to merge into the current branch. |
 | `shipkit deploy` | Deploy your ShipKit site to Vercel. |
 
 All commands support `-y` / `--yes` for non-interactive use (CI, agents):
 
 ```bash
-npx create-shipkit create my-new-site --yes
+npx create-shipkit-app my-new-site --yes
 shipkit sync --yes --direct
 ```
 
