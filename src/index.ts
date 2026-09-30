@@ -1,13 +1,16 @@
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import { type AddOptions, add } from "./add.js";
 import { type CreateOptions, create } from "./create.js";
 import { type DeployOptions, deploy } from "./deploy.js";
 import { type SyncOptions, sync } from "./sync.js";
 
+const pkg = createRequire(import.meta.url)("../package.json") as { version: string };
+
 const program = new Command()
   .name("shipkit")
   .description("Scaffold and manage ShipKit sites")
-  .version("0.4.1");
+  .version(pkg.version);
 
 program
   .command("create")
