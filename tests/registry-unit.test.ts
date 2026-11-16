@@ -2,8 +2,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, setDefaultTimeout } from "bun:test";
 import { mergeUpstream, REGISTRY_UNIT_PATHS } from "../src/registry-unit.js";
+
+// Each case shells out to git a dozen times; bun's 5s default flakes on a loaded machine.
+setDefaultTimeout(30_000);
 
 const dirs: string[] = [];
 const git = (cwd: string, ...args: string[]) =>
