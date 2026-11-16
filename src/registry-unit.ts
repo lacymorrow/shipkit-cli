@@ -17,6 +17,8 @@ export const REGISTRY_UNIT_PATHS = [
   "scripts/registry-smoke.sh",
   ".github/workflows/registry.yml",
   "docs/features/registry.mdx",
+  "tests/node/scripts/registry-artifacts-match-source.test.ts",
+  "tests/node/scripts/registry-api-routes-shipped.test.ts",
 ] as const;
 
 /** A repo is a registry source only while it still has `registry.json`. */
@@ -53,9 +55,13 @@ export async function mergeUpstream(cwd: string, ref: string): Promise<boolean> 
   if (isRegistrySource(cwd)) {
     return (await run("git", ["merge", ref, "--no-edit"], { cwd })) !== null;
   }
-  await run("git", ["merge", "--no-commit", "--no-ff", ref], { cwd });
+  const started = await run("git", ["merge", "--no-commit", "--no-ff", ref], { cwd });
   const merging = await run("git", ["rev-parse", "-q", "--verify", "MERGE_HEAD"], { cwd });
-  if (!merging) return true; // already up to date
+  if (!merging) {
+    // No merge in progress: either already up to date (git exited 0) or the merge refused
+    // to start (dirty tree, bad ref). Only the first is success.
+    return started !== null;
+  }
   await run("git", ["rm", "-rqf", "--ignore-unmatch", "--", ...REGISTRY_UNIT_PATHS], { cwd });
   const unresolved = await run("git", ["diff", "--name-only", "--diff-filter=U"], { cwd });
   if (unresolved) return false;
