@@ -1,6 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { DEFAULT_UPSTREAM_URL, UPSTREAM_REMOTE } from "./constants.js";
+import { mergeUpstream } from "./registry-unit.js";
 import { canAccessRepo, isNonInteractive, run, runOrThrow } from "./utils.js";
 
 export interface SyncOptions {
@@ -141,8 +142,8 @@ export async function sync(opts: SyncOptions): Promise<void> {
     }
 
     s.start("Merging upstream changes...");
-    const result = await run("git", ["merge", `${UPSTREAM_REMOTE}/main`, "--no-edit"], { cwd });
-    if (result === null) {
+    const merged = await mergeUpstream(cwd, `${UPSTREAM_REMOTE}/main`);
+    if (!merged) {
       s.stop("Merge conflicts detected. Resolve manually and commit.");
       process.exit(1);
     }
@@ -154,10 +155,8 @@ export async function sync(opts: SyncOptions): Promise<void> {
     s.start(`Creating sync branch ${pc.cyan(branch)}...`);
     await runOrThrow("git", ["checkout", "-b", branch], { cwd });
 
-    const mergeResult = await run("git", ["merge", `${UPSTREAM_REMOTE}/main`, "--no-edit"], {
-      cwd,
-    });
-    if (mergeResult === null) {
+    const merged = await mergeUpstream(cwd, `${UPSTREAM_REMOTE}/main`);
+    if (!merged) {
       s.stop("Merge conflicts detected on sync branch. Resolve and commit.");
       process.exit(1);
     }

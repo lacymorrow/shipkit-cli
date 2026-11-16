@@ -5,6 +5,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { add } from "./add.js";
 import { TEMPLATE_REPOS, UPSTREAM_REMOTE } from "./constants.js";
+import { stripRegistryUnit } from "./registry-unit.js";
 import {
   canAccessRepo,
   commandExists,
@@ -253,6 +254,13 @@ export async function create(projectName: string | undefined, opts: CreateOption
     } else {
       s.stop("Histories already connected.");
     }
+  }
+
+  // --- Drop the shadcn registry ---
+  // A new site never publishes /r/*.json, and the files go stale the moment a
+  // template page is deleted. Later `shipkit sync` runs keep them out too.
+  if (await stripRegistryUnit(targetDir)) {
+    p.log.info("Removed the template's shadcn registry files (this site does not publish them).");
   }
 
   // --- Install dependencies ---
