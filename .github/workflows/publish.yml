@@ -101,6 +101,21 @@ jobs:
             exit 1
           fi
 
+      # Both `bin` entries point at dist/index.js. If the artifact came down
+      # empty or in the wrong place, publishing would ship a package with no CLI.
+      - name: Tarball contains the entry points
+        run: |
+          files="$(npm pack --dry-run --json --ignore-scripts | node -e '
+            let s = "";
+            process.stdin.on("data", (d) => (s += d)).on("end", () => {
+              for (const f of JSON.parse(s)[0].files) console.log(f.path);
+            });
+          ')"
+          if ! printf '%s\n' "$files" | grep -qx 'dist/index.js'; then
+            echo "dist/index.js (target of both bin entries) is not in the tarball" >&2
+            exit 1
+          fi
+
       # --ignore-scripts: no node_modules here on purpose, and the `prepare`
       # script would otherwise try to rebuild with tsup. dist/ came from verify.
       - name: Publish
